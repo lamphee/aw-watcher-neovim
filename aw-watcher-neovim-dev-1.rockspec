@@ -1,11 +1,11 @@
 package = "aw-watcher-neovim"
-version = "dev-1"
+version = "1.0-1"
 source = {
-   url = "*** please add URL for source tarball, zip or repository here ***"
+   url = ""
 }
 description = {
-   homepage = "*** please enter a project homepage ***",
-   license = "*** please specify a license ***"
+   homepage = "https://github.com/lamphee/aw-watcher-neovim",
+   license = ""
 }
 dependencies = {
    "lua >= 5.1, < 5.5"
