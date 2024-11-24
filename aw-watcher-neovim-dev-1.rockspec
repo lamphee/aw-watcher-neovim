@@ -1,16 +1,16 @@
 package = "aw-watcher-neovim"
 version = "1.0-1"
 source = {
-   url = ""
+	url = "",
 }
 description = {
-   homepage = "https://github.com/lamphee/aw-watcher-neovim",
-   license = ""
+	homepage = "https://github.com/lamphee/aw-watcher-neovim",
+	license = "",
 }
 dependencies = {
-   "lua >= 5.1, < 5.5"
+	"lua >= 5.1, < 5.5",
 }
 build = {
-   type = "builtin",
-   modules = {}
+	type = "builtin",
+	modules = {},
 }
