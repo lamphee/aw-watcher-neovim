@@ -18,28 +18,45 @@ GROUP_ID = nil
 local logging_enabled = false
 local log_stack = {}
 
--- TODO: Replace level and caller_name with opts
---
 --- @param msg string - message to be logged
---- @param level? integer - logging level from vim.log.levels
---- @param caller_name? string - the function name from which it's called
+--- @param opts table - TODO: doc for each
 --- @see debug.getinfo
-local function log(msg, level, caller_name)
+local function log(msg, opts)
+	local function update_opts(original, new)
+		local final = table.move(original, 0, -1, 1)
+		for k, v in pairs(new) do
+			final[k] = v
+		end
+
+		return final
+	end
+
 	if not logging_enabled then
 		return
 	end
 
-	if caller_name ~= nil then
-		vim.notify(string.format("* Called from: %s *", caller_name), vim.log.levels.DEBUG)
+	local default_values = {
+		level = vim.log.levels.DEBUG,
+		caller_name = nil,
+		save_logs = false,
+		level_caller_name = vim.log.levels.INFO,
+	}
+
+	opts = update_opts(default_values, opts)
+
+	if opts.caller_name ~= nil then
+		vim.notify(string.format("* Called from: %s *", opts.caller_name), opts.level_caller_name)
 	end
 
+	-- replace with os.date??
 	local localtime = vim.fn.strftime("%c")
 	local log_msg = string.format("%s: %s", localtime, msg)
 
-	-- TODO: Add opts param to specify boolean flag
-	table.insert(log_stack, log_msg)
+	if default_values.save_logs then
+		table.insert(log_stack, log_msg)
+	end
 
-	vim.notify(log_msg, level)
+	vim.notify(log_msg, default_values.level)
 end
 
 --- @param url string
@@ -97,7 +114,11 @@ function Start()
 end
 
 function Heartbeat(args)
-	log(string.format("Recieved event [%s]", args.event), vim.log.levels.INFO, debug.getinfo(1, "n").name)
+	log(string.format("Recieved event [%s]", args.event), {
+		level = vim.log.levels.INFO,
+		caller_name = debug.getinfo(1, "n").name,
+		--save_logs = true,
+	})
 
 	local heartbeat_data = {
 		timestamp = vim.fn.strftime("%FT%H:%M:%S%z"),
@@ -109,23 +130,30 @@ function Heartbeat(args)
 		},
 	}
 
-	log(string.format("Sending data (%s)", table.concat(heartbeat_data)))
-	--vim.notify("fuck of", vim.log.levels.DEBUG)
+	log(string.format("Sending data (%s)", table.concat(heartbeat_data)), {})
 
 	return post_data(API_HEARTBEAT, heartbeat_data)
 end
 
 function Stop()
 	if GROUP_ID == nil then
-		log("The group is nil", vim.log.levels.INFO, debug.getinfo(1, "n").name)
+		log("The group is nil", {
+			level = vim.log.levels.INFO,
+			caller_name = debug.getinfo(1, "n").name,
+		})
 		return false
 	end
+
 	GROUP_ID = vim.api.nvim_del_augroup_by_id(GROUP_ID)
-	log("The group was cleared", vim.log.levels.INFO, debug.getinfo(1, "n").name)
+
+	log("The group was cleared", {
+		level = vim.log.levels.INFO,
+		caller_name = debug.getinfo(1, "n").name,
+	})
 end
 
 function ToggleLogging()
-	if logging_enabled then
+	if not logging_enabled then
 		print("Enabling logging")
 	else
 		print("Disabling logging...")
